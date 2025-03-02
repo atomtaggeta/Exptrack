@@ -8,12 +8,24 @@
 {% block body %}
 
 <div class="content">
-    <h1 style='text-align: center'> Update Task </h1>
+    <h1 style='text-align: center'> Update Expense </h1>
 
-    <form action="/update/{{task.id}}" method="POST">
+    <form action="/update/{{ expense.id }}" method="POST">
+        <label>Expense </label>
+        <input type="text" name="content" id="content" value="{{expense.content}}" reqiured>
 
-        <input type="text" name="content" id="content" value="{{task.content}}">
-        <input type="submit" value="Update">
+        <label for="category"> Category </label>
+        <select name="category" id="category" required>
+            <option value="Food">Food</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Bills">Bills</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <label>Amount </label>
+        <input type="number" name="amount" id="amount" step="0.01" value="{{expense.amount}}" required>
+        <input type="submit" value="Update expense">
     </form>
     
 </div>
