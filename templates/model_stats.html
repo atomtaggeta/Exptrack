@@ -1,0 +1,161 @@
+{% extends 'base.html'%}
+
+{% block head %}
+<style>
+    .content {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+    .chart-container {
+        text-align: center;
+        margin: 20px 0;
+    }
+    .chart-img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+    .stat-number {
+        font-size: 2em;
+        font-weight: bold;
+        color: #4CAF50;
+    }
+    .stat-label {
+        color: #666;
+        margin-top: 5px;
+    }
+    .category-stat {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        padding: 8px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+    }
+    .back-button {
+        padding: 10px 15px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+    .back-button:hover {
+        background-color: #45a049;
+    }
+    .model-status {
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .model-ready {
+        background-color: #dff0d8;
+        border-left: 5px solid #3c763d;
+    }
+    .model-not-ready {
+        background-color: #fcf8e3;
+        border-left: 5px solid #8a6d3b;
+    }
+    .ai-section {
+        border-top: 1px solid #eee;
+        margin-top: 30px;
+        padding-top: 20px;
+    }
+    .test-prediction-form {
+        margin-top: 20px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .btn-primary:hover {
+        background-color: #0069d9;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1 style='text-align: center'>AI Model Statistics</h1>
+    <a href="/" class="back-button">Back to Expenses</a>
+    
+    {% if model_exists %}
+        <div class="model-status model-ready">
+            <h3>✅ AI Model Status: Trained</h3>
+            <p>Your model is trained and ready to help categorize expenses!</p>
+        </div>
+    {% else %}
+        <div class="model-status model-not-ready">
+            <h3>⚠️ AI Model Status: Not Trained</h3>
+            <p>You need at least 10 training examples to train the model.</p>
+        </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="stat-number">{{ training_count }}</div>
+        <div class="stat-label">Training Examples Provided</div>
+        {% if training_count < 10 %}
+            <p>Add {{ 10 - training_count }} more examples to train the model</p>
+        {% endif %}
+    </div>
+    
+    {% if category_distribution %}
+        <div class="card">
+            <h3>Category Distribution</h3>
+            
+            {% if category_chart %}
+            <div class="chart-container">
+                <img class="chart-img" src="data:image/png;base64,{{ category_chart }}" alt="Category Distribution Chart">
+            </div>
+            {% endif %}
+            
+            {% for category, count in category_distribution.items() %}
+                <div class="category-stat">
+                    <span>{{ category }}</span>
+                    <span>{{ count }} examples ({{ (count / training_count * 100) | round }}%)</span>
+                </div>
+            {% endfor %}
+            <p><small>A balanced distribution across categories helps your model make better predictions.</small></p>
+        </div>
+    {% endif %}
+    
+    {% if model_exists %}
+        <div class="card">
+            <h3>Test AI Prediction</h3>
+            <p>Enter an expense description to see how the AI would categorize it, with visualization:</p>
+            <form action="/visualize_prediction" method="POST" class="test-prediction-form">
+                <div class="form-group">
+                    <label for="test_description">Expense Description:</label>
+                    <input type="text" id="test_description" name="test_description" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-primary">Visualize Prediction</button>
+            </form>
+        </div>
+    {% endif %}
+    
+</div>
+{% endblock %}

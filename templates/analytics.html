@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Analytics</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1> Expense Analysis </h1>
+    
+    {% if not has_expenses %}
+        <p>{{ message }} </p>
+    {% else %}
+        <div class="summary-box">
+            <h2>Summary</h2>
+            <p>Total number of expenses: {{ total_expenses }}</p>
+            <p>Total amount spent: {{ total_spent }}</p>
+            
+            <h3>Highest Expense</h3>
+            <p>{{ highest_expense.description }} - $ {{ highest_expense.amount }} ({{ highest_expense.category }})</p>
+
+            <h3>Most Expensive Category</h3>
+            <p>{{ most_expensive_category[0] }} : $ {{ most_expensive_category[1] }}</p>
+        </div>
+
+        <div class="category-breakdown">
+            <h2>Category Breakdown</h2>
+            <ul>
+                {% for category, amount in category_totals.items() %}
+                    <li>{{ category }}: ${{ amount }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <a href="{{ url_for('index') }}">Back to expenses</a>
+</div>
+
+{% endblock %}
