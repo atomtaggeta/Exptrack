@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Profile - Finance Tracker</title>
+{% endblock %}
+
+{% block body %}
+    <div class="section-header">
+        <h1>Profile</h1>
+        <form action="/logout" method="POST" style="margin: 0; padding: 0; background: none; box-shadow: none;">
+            <button type="submit" class="button">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </form>
+    </div>
+    
+    <div class="card">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ current_user.username[0]|upper }}
+            </div>
+            <div class="profile-info">
+                <h2>{{ current_user.username }}</h2>
+                <p>Member since {{ format_date(current_user.date_registered, user_settings) if current_user.date_registered else format_date(now(), user_settings) }}</p>
+            </div>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="card">
+        <div class="widget-header">
+            <h3 class="widget-title">Update Profile</h3>
+            <i class="fas fa-user-edit widget-icon"></i>
+        </div>
+        
+        <form action="/update_profile" method="POST">
+            <div class="form-group">
+                <label for="username"><i class="fas fa-user"></i> Username</label>
+                <input type="text" name="username" id="username" value="{{ current_user.username }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" name="email" id="email" value="{{ current_user.email or '' }}">
+            </div>
+            
+            <button type="submit" class="button">Update Profile</button>
+        </form>
+    </div>
+    
+    <div class="card">
+        <div class="widget-header">
+            <h3 class="widget-title">Change Password</h3>
+            <i class="fas fa-lock widget-icon"></i>
+        </div>
+        
+        <form action="/change_password" method="POST">
+            <div class="form-group">
+                <label for="current_password"><i class="fas fa-lock"></i> Current Password</label>
+                <input type="password" name="current_password" id="current_password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="new_password"><i class="fas fa-key"></i> New Password</label>
+                <input type="password" name="new_password" id="new_password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password"><i class="fas fa-check"></i> Confirm New Password</label>
+                <input type="password" name="confirm_password" id="confirm_password" required>
+            </div>
+            
+            <button type="submit" class="button">Change Password</button>
+        </form>
+    </div>
+    
+    <div class="card">
+        <div class="widget-header">
+            <h3 class="widget-title">Account Statistics</h3>
+            <i class="fas fa-chart-bar widget-icon"></i>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value">{{ expense_count|default(0) }}</div>
+                <div class="stat-label">Total Expenses</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ format_currency(total_spent|default(0), user_settings) }}</div>
+                <div class="stat-label">Total Spent</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ categories_used|default(0) }}</div>
+                <div class="stat-label">Categories Used</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ days_active|default(0) }}</div>
+                <div class="stat-label">Days Active</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="widget-header">
+            <h3 class="widget-title">Export Data</h3>
+            <i class="fas fa-file-export widget-icon"></i>
+        </div>
+        <div class="export-options">
+            <a href="/export/csv" class="button"><i class="fas fa-file-csv"></i> Export to CSV</a>
+            <a href="/export/pdf" class="button"><i class="fas fa-file-pdf"></i> Export to PDF</a>
+        </div>
+    </div>
+{% endblock %}

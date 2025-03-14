@@ -1,23 +1,29 @@
-{% extends 'base.html' %}
+{% extends 'base.html'%}
 
 {% block head %}
-    <title>Login</title>
+<title>Login - Finance AI</title>
 {% endblock %}
 
 {% block body %}
-    <div class="login_container">
-        <h2>Login</h2>
-        <form method="POST">
-            <div>
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div>
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit">Login</button>
-        </form>
-    </div>
-    <a href="/register">Don't have an account? Register here.</a>
+<div class="card">
+    <h1>Login</h1>
+    
+    <form method="POST" action="/login">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <button type="submit" class="button">Login</button>
+    </form>
+    
+    <p style="margin-top: 20px; text-align: center;">
+        Don't have an account? <a href="/register" style="color: #5e9eff; text-decoration: none;">Register here</a>
+    </p>
+</div>
 {% endblock %}

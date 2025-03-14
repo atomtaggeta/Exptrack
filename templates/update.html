@@ -1,46 +1,64 @@
-{% extends 'base.html'%}
+{% extends 'base.html' %}
 
 {% block head %}
-
+<title>Update Expense</title>
 {% endblock %}
 
-
 {% block body %}
-
-<div class="content">
-    <h1 style='text-align: center'> Update Expense </h1>
-
-    <form action="/update/{{ expense.id }}" method="POST">
-        <label>Expense </label>
-        <input type="text" name="content" id="content" value="{{expense.content}}" reqiured>
-
-        <label for="category"> Category </label>
-        <select name="category" id="category" required>
-            <option value="Food">Food</option>
-            <option value="Transportation">Transportation</option>
-            <option value="Entertainment">Entertainment</option>
-            <option value="Bills">Bills</option>
-            <option value="Health">Health</option>
-            <option value="Education">Education</option>
-            <option value="Shopping">Shopping</option>
-            <option value="Rent">Rent</option>
-            <option value="Utilities">Utilities</option>
-            <option value="Insurance">Insurance</option>
-            <option value="Gifts">Gifts</option>
-            <option value="Travel">Travel</option>
-            <option value="Subscriptions">Subscriptions</option>
-            <option value="Taxes">Taxes</option>
-            <option value="Loans">Loans</option>
-            <option value="Entertainment/Leisure">Entertainment/Leisure</option>
-            <option value="Sports">Sports</option>
-            <option value="Other">Other</option>
-        </select>
-
-        <label>Amount </label>
-        <input type="number" name="amount" id="amount" step="0.01" value="{{expense.amount}}" required>
-        <input type="submit" value="Update expense">
-    </form>
+<div class="card">
+    <div class="widget-header">
+        <h3 class="widget-title">Update Expense</h3>
+        <i class="fas fa-edit widget-icon"></i>
+    </div>
     
+    <form action="/update/{{ expense.id }}" method="POST">
+        <div class="form-grid">
+            <div>
+                <label for="content"><i class="fas fa-file-alt"></i> Expense Description</label>
+                <input type="text" name="content" id="content" value="{{ expense.content }}" required>
+            </div>
+            
+            <div>
+                <label for="category"><i class="fas fa-tags"></i> Category</label>
+                <select name="category" id="category" required>
+                    <option value="Food" {% if expense.category == 'Food' %}selected{% endif %}>Food</option>
+                    <option value="Transportation" {% if expense.category == 'Transportation' %}selected{% endif %}>Transportation</option>
+                    <option value="Entertainment" {% if expense.category == 'Entertainment' %}selected{% endif %}>Entertainment</option>
+                    <option value="Bills" {% if expense.category == 'Bills' %}selected{% endif %}>Bills</option>
+                    <option value="Health" {% if expense.category == 'Health' %}selected{% endif %}>Health</option>
+                    <option value="Education" {% if expense.category == 'Education' %}selected{% endif %}>Education</option>
+                    <option value="Shopping" {% if expense.category == 'Shopping' %}selected{% endif %}>Shopping</option>
+                    <option value="Rent" {% if expense.category == 'Rent' %}selected{% endif %}>Rent</option>
+                    <option value="Utilities" {% if expense.category == 'Utilities' %}selected{% endif %}>Utilities</option>
+                    <option value="Insurance" {% if expense.category == 'Insurance' %}selected{% endif %}>Insurance</option>
+                    <option value="Gifts" {% if expense.category == 'Gifts' %}selected{% endif %}>Gifts</option>
+                    <option value="Travel" {% if expense.category == 'Travel' %}selected{% endif %}>Travel</option>
+                    <option value="Subscriptions" {% if expense.category == 'Subscriptions' %}selected{% endif %}>Subscriptions</option>
+                    <option value="Taxes" {% if expense.category == 'Taxes' %}selected{% endif %}>Taxes</option>
+                    <option value="Loans" {% if expense.category == 'Loans' %}selected{% endif %}>Loans</option>
+                    <option value="Entertainment/Leisure" {% if expense.category == 'Entertainment/Leisure' %}selected{% endif %}>Entertainment/Leisure</option>
+                    <option value="Sports" {% if expense.category == 'Sports' %}selected{% endif %}>Sports</option>
+                    <option value="Other" {% if expense.category == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="amount"><i class="fas fa-dollar-sign"></i> Amount</label>
+                <input type="number" name="amount" id="amount" step="0.01" value="{{ expense.amount }}" required>
+            </div>
+            
+            <div>
+                <label for="date"><i class="fas fa-calendar"></i> Date</label>
+                <input type="date" name="date" id="date" value="{{ expense.date_created.strftime('%Y-%m-%d') }}" required>
+            </div>
+            
+            <div style="display: flex; align-items: flex-end; grid-column: span 2;">
+                <input type="submit" value="Update Expense" class="button">
+                <a href="/" style="margin-left: 10px; text-decoration: none;">
+                    <button type="button" class="button" style="background-color: #ccc;">Cancel</button>
+                </a>
+            </div>
+        </div>
+    </form>
 </div>
-
 {% endblock %}

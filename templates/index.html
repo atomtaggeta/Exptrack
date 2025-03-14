@@ -1,147 +1,225 @@
 {% extends 'base.html'%}
 
 {% block head %}
-
+<title>Finance AI</title>
 {% endblock %}
 
-
 {% block body %}
-
-<div class="content">
-    <h1 style='text-align: center'> Expenses </h1>
-
-    <div class="section-header">
-        <h2>Welcome to Your Expenses Tracker, {{ current_user.username }}!</h2>
-        <form action="/logout" method="POST" style="margin: 0; padding: 0; background: none;">
-            <button type="submit">Logout</button>
-        </form>
+<!-- Flash message for AI model status instead of permanent section -->
+{% if not model_trained %}
+<div class="flash-message info ai-status-message">
+    <div class="icon">
+        <i class="fas fa-robot"></i>
     </div>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="model-status">
-        {% if model_trained %}
-            <p> AI model is trained and ready to use</p>
-        {% else %}
-            <p>AI model is not trained yet. Add at least 10 training examples.</p>
-            <p>Current training examples: {{ training_count|default(0) }} / 10 needed </p>
-        {% endif %}
+    <div class="message-content">
+        AI model needs more training data. Add at least 10 training examples.
+        <div class="progress-bar">
+            <div class="progress" style="width: {{ (training_count|default(0) / 10) * 100 }}%;"></div>
+        </div>
+        <p>Current training examples: {{ training_count|default(0) }} / 10 needed</p>
     </div>
+    <button class="close-btn" aria-label="Close">
+        <i class="fas fa-times"></i>
+    </button>
+</div>
+{% endif %}
 
+<div class="card">
+    <div class="widget-header">
+        <h3 class="widget-title">Recent Expenses</h3>
+        <i class="fas fa-receipt widget-icon"></i>
+    </div>
+    
     {% if expenses|length < 1 %}
-    <h4 style="text-align:center">There are no expenses. Add one below</h4>
+    <div class="no-expenses">
+        <i class="fas fa-receipt"></i>
+        <p>There are no expenses. Add one below</p>
+    </div>
     {% else %}
-    <table>
-        <tr>
-            <th>Expense</th>
-            <th>Category</th>
-            <th>Amount</th>
-            <th>Added</th>
-            <th>Actions</th>
-        </tr>
-
-        {% for expense in expenses %}
-
-        <tr>
-            <td>{{ expense.content }}</td>
-
-            <td>{{ expense.category }}</td>
-
-            <td>${{'%.2f' % expense.amount }}
-
-            <td>{{ expense.date_created.date() }}</td>                                                                                                                                                                                                                                                                            
-            <td>
-                <a href="/delete/{{expense.id}}">Delete</a>
-                <br>
-                <a href="/update/{{expense.id}}">Update</a>
-            </td>
-        </tr>
+    <div class="expenses-container">
+        {% for expense in expenses|sort(attribute='date_created', reverse=true) %}
+            <div class="expense-item category-{{ expense.category|lower|replace('/', '-') }}">
+                <div class="expense-details">
+                    <div class="expense-content">
+                        <span class="expense-description">{{ expense.content }}</span>
+                        <span class="expense-time">{{ expense.date_created.strftime('%Y-%m-%d %I:%M %p') }}</span>
+                    </div>
+                    <div class="expense-category">
+                        <span class="category-badge {{ expense.category|lower|replace('/', '-') }}">
+                            <i class="fas fa-{{ 
+                                'utensils' if expense.category == 'Food' else 
+                                'car' if expense.category == 'Transportation' else 
+                                'film' if expense.category == 'Entertainment' else 
+                                'file-invoice' if expense.category == 'Bills' else 
+                                'medkit' if expense.category == 'Health' else 
+                                'graduation-cap' if expense.category == 'Education' else 
+                                'shopping-bag' if expense.category == 'Shopping' else 
+                                'home' if expense.category == 'Rent' else 
+                                'bolt' if expense.category == 'Utilities' else 
+                                'shield-alt' if expense.category == 'Insurance' else 
+                                'gift' if expense.category == 'Gifts' else 
+                                'plane' if expense.category == 'Travel' else 
+                                'calendar-alt' if expense.category == 'Subscriptions' else 
+                                'dollar-sign' if expense.category == 'Taxes' else 
+                                'hand-holding-usd' if expense.category == 'Loans' else 
+                                'smile' if expense.category == 'Entertainment/Leisure' else 
+                                'running' if expense.category == 'Sports' else 
+                                'tag' }}"></i>
+                            {{ expense.category }}
+                        </span>
+                    </div>
+                </div>
+                <div class="expense-amount">
+                    {{ format_currency(expense.amount, user_settings) }}
+                </div>
+                <div class="expense-actions">
+                    <a href="/update/{{expense.id}}" title="Edit"><i class="fas fa-edit"></i></a>
+                    <a href="/delete/{{expense.id}}" class="delete-link" title="Delete"><i class="fas fa-trash"></i></a>
+                </div>
+            </div>
         {% endfor %}
-
-    </table>
+    </div>
     {% endif %}
+</div>
 
-    <form action="/" method="POST">
-
-        <label for="content"> Expense </label>
-        <input type="text" name="content" id="content" placeholder="Expense" required>
-
-        <label for="category"> Category </label>
-        <select name="category" id="category" required>
-            <option value="Food">Food</option>
-            <option value="Transportation">Transportation</option>
-            <option value="Entertainment">Entertainment</option>
-            <option value="Bills">Bills</option>
-            <option value="Health">Health</option>
-            <option value="Education">Education</option>
-            <option value="Shopping">Shopping</option>
-            <option value="Rent">Rent</option>
-            <option value="Utilities">Utilities</option>
-            <option value="Insurance">Insurance</option>
-            <option value="Gifts">Gifts</option>
-            <option value="Travel">Travel</option>
-            <option value="Subscriptions">Subscriptions</option>
-            <option value="Taxes">Taxes</option>
-            <option value="Loans">Loans</option>
-            <option value="Entertainment/Leisure">Entertainment/Leisure</option>
-            <option value="Sports">Sports</option>
-            <option value="Other">Other</option>
-        </select>
+<div class="two-column-grid">
+    <div class="card">
+        <div class="widget-header">
+            <h3 class="widget-title">Add New Expense</h3>
+            <i class="fas fa-plus-circle widget-icon"></i>
+        </div>
         
+        <form action="/" method="POST">
+            <div class="form-grid">
+                <div>
+                    <label for="content"><i class="fas fa-file-alt"></i> Expense Description</label>
+                    <input type="text" name="content" id="content" placeholder="e.g., Groceries at Walmart" required>
+                </div>
+                
+                <div>
+                    <label for="category"><i class="fas fa-tags"></i> Category</label>
+                    <select name="category" id="category" required>
+                        <option value="Food">Food</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Bills">Bills</option>
+                        <option value="Health">Health</option>
+                        <option value="Education">Education</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Rent">Rent</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Insurance">Insurance</option>
+                        <option value="Gifts">Gifts</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Subscriptions">Subscriptions</option>
+                        <option value="Taxes">Taxes</option>
+                        <option value="Loans">Loans</option>
+                        <option value="Entertainment/Leisure">Entertainment/Leisure</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="amount">
+                        <i class="fas fa-{{ 'euro-sign' if user_settings.currency == 'EUR' else 
+                                          'pound-sign' if user_settings.currency == 'GBP' else 
+                                          'yen-sign' if user_settings.currency in ['JPY', 'CNY'] else 
+                                          'rupee-sign' if user_settings.currency == 'INR' else 
+                                          'dollar-sign' }}"></i> 
+                        Amount 
+                        ({{ '$' if user_settings.currency == 'USD' else 
+                            '€' if user_settings.currency == 'EUR' else 
+                            '£' if user_settings.currency == 'GBP' else 
+                            '¥' if user_settings.currency in ['JPY', 'CNY'] else 
+                            '₹' if user_settings.currency == 'INR' else 
+                            'C$' if user_settings.currency == 'CAD' else 
+                            'A$' if user_settings.currency == 'AUD' else '$' }})
+                    </label>
+                    <input type="number" name="amount" id="amount" step="0.01" placeholder="0.00" required>
+                </div>
 
-        <label for="amount"> Amount </label>
-        <input type="number" name="amount" id="amount" step="0.01" placeholder="Amount" required>
-        
-        <input type="submit" value="Add Expense">
-    </form>
-
-    <div class="ai-section">
-        <h3>Train AI model </h3>
-        <p>Help the AI learn to categorize your expenses automatically</p>
-
-        <form action="/train_model" method="POST">
-            <label for="expense_description">Expense Description</label>
-            <input type="text" name="expense_description" id="expense_description" placeholder="Enter expense description (e.g., 'Bus ticket')" required>
-
-            <label for="expense_category">Category</label>
-            <select name="expense_category" id="expense_category" required>
-                <option value="Food">Food</option>
-                <option value="Transportation">Transportation</option>
-                <option value="Entertainment">Entertainment</option>
-                <option value="Bills">Bills</option>
-                <option value="Other">Other</option>
-            </select>
-
-            <input type="submit" value="Add Training Example">
+                <div>
+                    <label for="date"><i class="fas fa-calendar"></i> Date</label>
+                    <input type="date" name="date" id="date" value="{{ now().strftime('%Y-%m-%d') }}" required>
+                </div>
+                
+                <div style="display: flex; align-items: flex-end; grid-column: span 2;">
+                    <input type="submit" value="Add Expense" class="button">
+                </div>
+            </div>
         </form>
     </div>
-    <a href="{{ url_for('model_stats') }}" class="button">View AI Model Statistics</a>
 
-    <div class="ai-predict-section">
-        <h3>Quick Add with AI</h3>
+    <div class="card ai-predict-section">
+        <div class="widget-header">
+            <h3 class="widget-title">Quick Add with AI</h3>
+            <i class="fas fa-magic widget-icon"></i>
+        </div>
         <p>Let the AI predict the category for a new expense</p>
 
         <form action="/predict_category" method="POST">
-            <label for="test_description">Expense Description</label>
-            <input type="text" name="test_description" id="test_description" placeholder="Enter expense description (e.g., 'Movie tickets')" required>
+            <div class="form-grid">
+                <div>
+                    <label for="test_description"><i class="fas fa-file-alt"></i> Expense Description</label>
+                    <input type="text" name="test_description" id="test_description" placeholder="e.g., Movie tickets" required>
+                </div>
+                
+                <div>
+                    <label for="predict_amount"><i class="fas fa-dollar-sign"></i> Amount</label>
+                    <input type="number" name="amount" id="predict_amount" step="0.01" placeholder="0.00" required>
+                </div>
 
-            <label for="amount">Amount</label>
-            <input type="number" name="amount" id="predict_amount" step="0.01" placeholder="Amount" value="0.00" required>
-
-            <input type="submit" value="Add with AI prediction" {% if not model_trained %}disabled{% endif %}>
-            {% if not model_trained %}
-            <p><small>Train the model first to enable this feature</small></p>
-            {% endif %}
+                <div>
+                    <label for="predict_date"><i class="fas fa-calendar"></i> Date</label>
+                    <input type="date" name="date" id="predict_date" value="{{ now().strftime('%Y-%m-%d') }}" required>
+                </div>
+                
+                <div style="grid-column: span 2;">
+                    <input type="submit" value="Add with AI prediction" class="button" {% if not model_trained %}disabled{% endif %}>
+                    {% if not model_trained %}
+                    <p><small>Train the model first to enable this feature</small></p>
+                    {% endif %}
+                </div>
+            </div>
         </form>
     </div>
 </div>
 
+<div class="card ai-section">
+    <div class="widget-header">
+        <h3 class="widget-title">Train AI Model</h3>
+        <i class="fas fa-brain widget-icon"></i>
+    </div>
+    <p>Help the AI learn to categorize your expenses automatically</p>
+
+    <form action="/train_model" method="POST">
+        <div class="form-grid">
+            <div>
+                <label for="expense_description"><i class="fas fa-file-alt"></i> Expense Description</label>
+                <input type="text" name="expense_description" id="expense_description" placeholder="e.g., Bus ticket" required>
+            </div>
+            
+            <div>
+                <div>
+                    <label for="training_category"><i class="fas fa-tags"></i> Category</label>
+                    <select name="expense_category" id="training_category" required>
+                        {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+            </div>
+            
+            <div style="grid-column: span 2;">
+                <input type="submit" value="Add Training Example" class="button">
+            </div>
+        </div>
+    </form>
+</div>
+
+<a href="{{ url_for('model_stats') }}" class="button" style="width: 100%; text-align: center; margin-bottom: 20px;">
+    <i class="fas fa-chart-bar"></i> View AI Model Statistics
+</a>
 {% endblock %}

@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Dashboard - Finance Tracker</title>
+{% endblock %}
+
+{% block body %}
+    <div class="section-header">
+        <h1>Dashboard</h1>
+        <p>Overview of your financial situation</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="widget">
+            <div class="widget-header">
+                <h3 class="widget-title">Total Expenses</h3>
+                <i class="fas fa-money-bill-wave widget-icon"></i>
+            </div>
+            <div class="widget-content">
+                <h2 class="metric">{{ format_currency(total_expenses, user_settings) }}</h2>
+            </div>
+        </div>
+        
+        <div class="widget">
+            <div class="widget-header">
+                <h3 class="widget-title">Monthly Average</h3>
+                <i class="fas fa-calendar-alt widget-icon"></i>
+            </div>
+            <div class="widget-content">
+                <h2 class="metric">{{ format_currency(monthly_average, user_settings) }}</h2>
+            </div>
+        </div>
+
+        <div class="widget">
+            <div class="widget-header">
+                <div class="widget-title">Highest Category</div>
+                <i class="fas fa-chart-pie widget-icon"></i>
+            </div>
+            <div class="widget-value">{{ highest_category|default('N/A') }}</div>
+            <div class="widget-description">Most expensive category</div>
+        </div>
+        
+        <div class="widget">
+            <div class="widget-header">
+                <div class="widget-title">Expense Count</div>
+                <i class="fas fa-receipt widget-icon"></i>
+            </div>
+            <div class="widget-value">{{ expense_count|default('0') }}</div>
+            <div class="widget-description">Total number of expenses</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="widget-header">
+            <h3 class="widget-title">Monthly Spending Trend</h3>
+            <i class="fas fa-chart-line widget-icon"></i>
+        </div>
+        <div class="chart-container">
+            {% if months|length > 0 %}
+            <canvas id="monthlySpendingChart"></canvas>
+            {% else %}
+            <p class="no-data-message">Not enough data to display monthly spending trend.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="widget-header">
+            <h3 class="widget-title">Expense Distribution by Category</h3>
+            <i class="fas fa-chart-pie widget-icon"></i>
+        </div>
+        <div class="chart-container">
+            {% if category_labels|length > 0 %}
+            <canvas id="categoryDistributionChart"></canvas>
+            {% else %}
+            <p class="no-data-message">Not enough data to display category distribution.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="widget-header">
+            <h3 class="widget-title">Recent Transactions</h3>
+            <i class="fas fa-list widget-icon"></i>
+        </div>
+        {% if recent_expenses|length < 1 %}
+        <p style="text-align:center">No recent expenses found.</p>
+        {% else %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in recent_expenses %}
+                    <tr>
+                        <td>{{ expense.content }}</td>
+                        <td>{{ expense.category }}</td>
+                        <td>{{ format_currency(expense.amount, user_settings) }}</td>
+                        <td>{{ format_date(expense.date_created, user_settings) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Monthly Spending Trend Chart
+        const monthlySpendingCtx = document.getElementById('monthlySpendingChart');
+        if (monthlySpendingCtx) {
+            const monthlySpendingChart = new Chart(monthlySpendingCtx, {
+                type: 'line',
+                data: {
+                    labels: {{ months|tojson }},
+                    datasets: [{
+                        label: 'Monthly Spending',
+                        data: {{ monthly_spending|tojson }},
+                        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '{{ user_settings.currency if user_settings else "$" }}' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '{{ user_settings.currency if user_settings else "$" }}' + context.raw;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    
+        // Category Distribution Chart with diverse colors
+        const categoryDistributionCtx = document.getElementById('categoryDistributionChart');
+        if (categoryDistributionCtx) {
+            const categoryDistributionChart = new Chart(categoryDistributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ category_labels|tojson }},
+                    datasets: [{
+                        data: {{ category_values|tojson }},
+                        backgroundColor: [
+                            '#FF6384', // Bright Pink
+                            '#36A2EB', // Bright Blue
+                            '#FFCE56', // Yellow
+                            '#4BC0C0', // Teal
+                            '#9966FF', // Purple
+                            '#FF9F40', // Orange
+                            '#32CD32', // Lime Green
+                            '#FF5733', // Coral
+                            '#8A2BE2', // Blue Violet
+                            '#00BFFF', // Deep Sky Blue
+                            '#20B2AA', // Light Sea Green
+                            '#FF1493', // Deep Pink
+                            '#7FFF00', // Chartreuse
+                            '#B22222', // Fire Brick
+                            '#4169E1', // Royal Blue
+                            '#FFD700', // Gold
+                            '#3CB371', // Medium Sea Green
+                            '#DC143C'  // Crimson
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: {{ user_settings.currency if user_settings else "$" }}${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Settings - Finance Tracker</title>
+<style>
+    .settings-container {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+    }
+    
+    .settings-section {
+        margin-bottom: 30px;
+    }
+    
+    .settings-section h2 {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    @media (min-width: 768px) {
+        .settings-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    }
+    
+    .animation-fade {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+    <div class="section-header">
+        <h1>Settings</h1>
+        <p>Customize your finance tracker experience</p>
+    </div>
+
+    <div class="settings-grid">
+        <div class="settings-container animation-fade">
+            <!-- All Settings in One Form -->
+            <form id="settingsForm" action="/update_settings" method="POST">
+                <input type="hidden" name="section" value="all">
+                
+                <!-- General Settings Section -->
+                <div class="settings-section">
+                    <h2>General Settings</h2>
+                    
+                    <div class="form-group">
+                        <label for="theme">Theme</label>
+                        <select name="theme" id="theme">
+                            <option value="light" {% if settings.theme == 'light' %}selected{% endif %}>Light Mode</option>
+                            <option value="dark" {% if settings.theme == 'dark' %}selected{% endif %}>Dark Mode</option>
+                            <option value="system" {% if settings.theme == 'system' %}selected{% endif %}>System Default</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Currency Settings Section -->
+                <div class="settings-section">
+                    <h2>Currency Settings</h2>
+                    
+                    <div class="settings-form-row">
+                        <div class="form-group">
+                            <label for="currency">Currency</label>
+                            <select name="currency" id="currency">
+                                <option value="USD" {% if settings.currency == 'USD' %}selected{% endif %}>US Dollar ($)</option>
+                                <option value="EUR" {% if settings.currency == 'EUR' %}selected{% endif %}>Euro (€)</option>
+                                <option value="GBP" {% if settings.currency == 'GBP' %}selected{% endif %}>British Pound (£)</option>
+                                <option value="JPY" {% if settings.currency == 'JPY' %}selected{% endif %}>Japanese Yen (¥)</option>
+                                <option value="CAD" {% if settings.currency == 'CAD' %}selected{% endif %}>Canadian Dollar (C$)</option>
+                                <option value="AUD" {% if settings.currency == 'AUD' %}selected{% endif %}>Australian Dollar (A$)</option>
+                                <option value="INR" {% if settings.currency == 'INR' %}selected{% endif %}>Indian Rupee (₹)</option>
+                                <option value="CNY" {% if settings.currency == 'CNY' %}selected{% endif %}>Chinese Yuan (¥)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="currency_position">Currency Symbol Position</label>
+                            <select name="currency_position" id="currency_position">
+                                <option value="before" {% if settings.currency_position == 'before' %}selected{% endif %}>Before amount ($100)</option>
+                                <option value="after" {% if settings.currency_position == 'after' %}selected{% endif %}>After amount (100$)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="decimal_separator">Decimal Separator</label>
+                        <select name="decimal_separator" id="decimal_separator">
+                            <option value="." {% if settings.decimal_separator == '.' %}selected{% endif %}>Period (100.00)</option>
+                            <option value="," {% if settings.decimal_separator == ',' %}selected{% endif %}>Comma (100,00)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Save Button for All Settings -->
+                <div class="form-actions">
+                    <button type="submit" class="button">Save All Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Track original theme to detect changes
+    const originalTheme = document.getElementById('theme').value;
+    
+    // Settings form submission with confirmation
+    const settingsForm = document.getElementById('settingsForm');
+    
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', function(e) {
+            // Prevent default form behavior
+            e.preventDefault();
+            
+            // Show confirmation dialog
+            createSettingsConfirmModal(this);
+        });
+    }
+    
+    // Create a settings confirmation modal
+    function createSettingsConfirmModal(form) {
+        // Create modal elements if they don't exist yet
+        if (!document.getElementById('settingsConfirmModal')) {
+            const modalHTML = `
+                <div id="settingsConfirmModal" class="confirm-modal">
+                    <div class="confirm-modal-content">
+                        <div class="confirm-modal-header">
+                            <h3><i class="fas fa-cog"></i> Confirm Settings Change</h3>
+                        </div>
+                        <div class="confirm-modal-body">
+                            <p>Are you sure you want to save these settings?</p>
+                        </div>
+                        <div class="confirm-modal-footer">
+                            <button id="settingsCancel" class="button button-secondary">Cancel</button>
+                            <button id="settingsConfirm" class="button button-primary">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+        
+        const modal = document.getElementById('settingsConfirmModal');
+        const cancelBtn = document.getElementById('settingsCancel');
+        const confirmBtn = document.getElementById('settingsConfirm');
+        
+        // Show the modal
+        modal.classList.add('show');
+        
+        // Handle Cancel button
+        cancelBtn.onclick = function() {
+            modal.classList.remove('show');
+        };
+        
+        // Handle Confirm button
+        confirmBtn.onclick = function() {
+            modal.classList.remove('show');
+            submitSettingsForm(form);
+        };
+        
+        // Also close when clicking outside the modal
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+    }
+
+    // Function to submit the settings form
+    function submitSettingsForm(form) {
+        // Get form data
+        const formData = new FormData(form);
+        
+        // Store the selected theme to apply after saving
+        const selectedTheme = document.getElementById('theme').value;
+        
+        // Submit form using fetch API
+        fetch('/update_settings', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                // Only now store and apply the theme
+                localStorage.setItem('theme', selectedTheme);
+                applyTheme(selectedTheme);
+                return response.text();
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        })
+        .then(() => {
+            // Show success message
+            const container = document.querySelector('.flash-messages-container');
+            if (!container) {
+                // Create container if it doesn't exist
+                const containerHTML = '<div class="flash-messages-container"></div>';
+                document.body.insertAdjacentHTML('beforeend', containerHTML);
+            }
+            
+            const messageContainer = document.querySelector('.flash-messages-container');
+            const messageHTML = `
+                <div class="flash-message success">
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="message-content">Settings saved successfully!</div>
+                    <button class="close-btn" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            messageContainer.insertAdjacentHTML('beforeend', messageHTML);
+            
+            // Initialize flash message behavior
+            if (typeof setupFlashMessages === 'function') {
+                setupFlashMessages();
+            } else {
+                // Fallback if setupFlashMessages isn't available
+                const messages = document.querySelectorAll('.flash-message');
+                messages.forEach(message => {
+                    message.classList.add('show');
+                    
+                    const closeBtn = message.querySelector('.close-btn');
+                    if (closeBtn) {
+                        closeBtn.addEventListener('click', () => {
+                            message.classList.remove('show');
+                            setTimeout(() => {
+                                message.remove();
+                            }, 300);
+                        });
+                    }
+                    
+                    setTimeout(() => {
+                        message.classList.remove('show');
+                        setTimeout(() => {
+                            message.remove();
+                        }, 300);
+                    }, 5000);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error saving settings:', error);
+            // Show error message
+            const container = document.querySelector('.flash-messages-container') || 
+                            document.body.insertAdjacentHTML('beforeend', '<div class="flash-messages-container"></div>') && 
+                            document.querySelector('.flash-messages-container');
+            
+            const messageHTML = `
+                <div class="flash-message danger">
+                    <div class="icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="message-content">Error saving settings. Please try again.</div>
+                    <button class="close-btn" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', messageHTML);
+            
+            // Initialize flash message behavior
+            if (typeof setupFlashMessages === 'function') {
+                setupFlashMessages();
+            }
+        });
+    }
+    
+    // Improved theme detection and application (copied from main.js for consistency)
+    function applyTheme(theme) {
+        const htmlElement = document.documentElement;
+        
+        if (theme === 'dark') {
+            htmlElement.classList.remove('light');
+            htmlElement.classList.add('dark');
+        } else if (theme === 'light') {
+            htmlElement.classList.remove('dark');
+            htmlElement.classList.add('light');
+        } else if (theme === 'system') {
+            // Check system preference
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDark) {
+                htmlElement.classList.remove('light');
+                htmlElement.classList.add('dark');
+            } else {
+                htmlElement.classList.remove('dark');
+                htmlElement.classList.add('light');
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

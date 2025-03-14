@@ -1,15 +1,77 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-        {% block head %}{% endblock %}
-    </head>
-    <body>
+<html lang="en" class="{{ user_settings.theme if user_settings and user_settings.theme else 'light' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker with AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flash-messages.css') }}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo-link">
+                <div class="navbar-logo">
+                    <i class="fas fa-wallet"></i>
+                    <span>Finance AI</span>
+                </div>
+            </a>
+            <button class="mobile-menu-button" id="mobileMenuButton">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="navbar-links" id="navbarLinks">
+                <a href="/" class="{{ 'active' if request.path == '/' else '' }}">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="/dashboard" class="{{ 'active' if request.path == '/dashboard' else '' }}">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="/model_stats" class="{{ 'active' if request.path == '/model_stats' else '' }}">
+                    <i class="fas fa-brain"></i> AI Stats
+                </a>
+                <a href="/settings" class="{{ 'active' if request.path == '/settings' else '' }}">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="/profile" class="{{ 'active' if request.path == '/profile' else '' }}">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash messages container -->
+    <div class="flash-messages-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        <div class="icon">
+                            <i class="fas fa-{{ 'check-circle' if category == 'success' else 
+                                           'exclamation-circle' if category == 'danger' else 
+                                           'info-circle' if category == 'info' else 
+                                           'exclamation-triangle' }}"></i>
+                        </div>
+                        <div class="message-content">{{ message }}</div>
+                        <button class="close-btn" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <main class="content">
         {% block body %}{% endblock %}
-        <script src="" async defer></script>
-    </body>
+    </main>
+
+    <!-- JavaScript files -->
+    <script src="{{ url_for('static', filename='js/flash-messages.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
 </html>

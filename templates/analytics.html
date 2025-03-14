@@ -16,20 +16,30 @@
             <p>Total number of expenses: {{ total_expenses }}</p>
             <p>Total amount spent: {{ total_spent }}</p>
             
-            <h3>Highest Expense</h3>
-            <p>{{ highest_expense.description }} - $ {{ highest_expense.amount }} ({{ highest_expense.category }})</p>
-
-            <h3>Most Expensive Category</h3>
-            <p>{{ most_expensive_category[0] }} : $ {{ most_expensive_category[1] }}</p>
+            <div class="card">
+                <h3>Highest Expense</h3>
+                <div class="expense-details">
+                    <p><strong>Description:</strong> {{ highest_expense.description }}</p>
+                    <p><strong>Category:</strong> {{ highest_expense.category }}</p>
+                    <p><strong>Amount:</strong> {{ format_currency(highest_expense.amount, user_settings) }}</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Most Expensive Category</h3>
+                <p>{{ most_expensive_category[0] }} - {{ format_currency(most_expensive_category[1], user_settings) }}</p>
+            </div>
         </div>
 
-        <div class="category-breakdown">
-            <h2>Category Breakdown</h2>
-            <ul>
+        <div class="card">
+            <h3>Spending by Category</h3>
+            <div class="category-breakdown">
                 {% for category, amount in category_totals.items() %}
-                    <li>{{ category }}: ${{ amount }}</li>
+                <div class="category-item">
+                    <span class="category-name">{{ category }}</span>
+                    <span class="category-amount">{{ format_currency(amount, user_settings) }}</span>
+                </div>
                 {% endfor %}
-            </ul>
+            </div>
         </div>
     {% endif %}
 

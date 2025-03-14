@@ -1,0 +1,115 @@
+.flash-messages-container {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    max-width: 500px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.flash-message {
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.flash-message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.flash-message .icon {
+    margin-right: 12px;
+    font-size: 20px;
+}
+
+.flash-message .message-content {
+    flex: 1;
+    font-weight: 500;
+}
+
+.flash-message .close-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    padding: 5px;
+}
+
+.flash-message .close-btn:hover {
+    opacity: 1;
+}
+
+/* Message types with bolder colors */
+.flash-message.success {
+    background-color: #1e7e34;
+    color: #ffffff;
+    border-left: 4px solid #28a745;
+}
+
+.flash-message.danger {
+    background-color: #dc3545;
+    color: #ffffff;
+    border-left: 4px solid #bd2130;
+}
+
+.flash-message.warning {
+    background-color: #ffc107;
+    color: #212529;
+    border-left: 4px solid #d39e00;
+}
+
+.flash-message.info {
+    background-color: #17a2b8;
+    color: #ffffff;
+    border-left: 4px solid #138496;
+}
+
+/* Add icons colors */
+.flash-message.success .icon {
+    color: #b3ffb3;
+}
+
+.flash-message.danger .icon {
+    color: #ffb3b3;
+}
+
+.flash-message.warning .icon {
+    color: #fff3cd;
+}
+
+.flash-message.info .icon {
+    color: #b3e0ff;
+}
+
+/* Close button specific colors */
+.flash-message.success .close-btn {
+    color: #ffffff;
+}
+
+.flash-message.danger .close-btn {
+    color: #ffffff;
+}
+
+.flash-message.warning .close-btn {
+    color: #212529;
+}
+
+.flash-message.info .close-btn {
+    color: #ffffff;
+}
